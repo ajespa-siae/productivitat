@@ -55,5 +55,9 @@
     "Organization": "Organització",
     "Evaluation": "Avaluació",
     "Administration": "Administració",
-    "Configuration": "Configuració"
+    "Configuration": "Configuració",
+    "User": "Usuari",
+    "Password": "Contrasenya",
+    "Remember": "Recordar",
+    "Login": "Iniciar sessió"
 }

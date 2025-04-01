@@ -5,13 +5,12 @@ namespace App\Providers\Filament;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationGroup;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Navigation\NavigationGroup;
 use Filament\Widgets;
-use App\Filament\Widgets\PeriodoActivoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -20,6 +19,7 @@ use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use App\Filament\Pages\Auth\Login;
+// use App\Filament\Widgets\LdapAttributesWidget;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -40,7 +40,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                PeriodoActivoWidget::class,
+                // LdapAttributesWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -57,7 +57,6 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->authGuard('web')
-            ->spa()
             ->navigationGroups([
                 NavigationGroup::make()
                     ->label(trans('filament.navigation.groups.Periods'))
@@ -75,6 +74,8 @@ class AdminPanelProvider extends PanelProvider
                     ->label(trans('filament.navigation.groups.Configuration'))
                     ->icon('heroicon-o-cog-6-tooth')
                     ->collapsed(),
-            ]);
+            ])
+            ->spa()
+            ->maxContentWidth('full');
     }
 }

@@ -48,6 +48,11 @@ class UserResource extends Resource
                     ->required()
                     ->maxLength(255)
                     ->unique(ignoreRecord: true),
+                Forms\Components\TextInput::make('nif')
+                    ->label(__('filament.columns.nif'))
+                    ->required()
+                    ->maxLength(255)
+                    ->unique(ignoreRecord: true),
                 Forms\Components\TextInput::make('password')
                     ->password()
                     ->dehydrateStateUsing(fn (string $state): string => Hash::make($state))
@@ -67,6 +72,9 @@ class UserResource extends Resource
                     ->label(__('filament.columns.nombre'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('nif')
+                    ->label(__('filament.columns.nif'))
                     ->searchable(),
                 Tables\Columns\IconColumn::make('is_admin')
                     ->label(__('Administrador'))

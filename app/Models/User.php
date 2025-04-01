@@ -26,9 +26,9 @@ class User extends Authenticatable implements FilamentUser, LdapAuthenticatable
         'name',
         'email',
         'password',
+        'samaccountname',
+        'nif',
         'is_admin',
-        'guid',
-        'domain',
     ];
 
     /**
