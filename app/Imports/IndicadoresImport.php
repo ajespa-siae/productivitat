@@ -9,63 +9,92 @@ use App\Models\Grupo;
 use App\Models\Rol;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Illuminate\Support\Facades\Log;
 
 class IndicadoresImport implements ToModel, WithHeadingRow
 {
     public function model(array $row)
     {
+        Log::info('Datos recibidos del Excel:', $row);
+        
+        // Convertir las claves del array a minúsculas
+        $row = array_change_key_case($row, CASE_LOWER);
+        
+        Log::info('Datos después de convertir a minúsculas:', $row);
+
+        // Validar que las columnas requeridas existan
+        $required_columns = ['competencia', 'grupo', 'rol', 'peso'];
+        foreach ($required_columns as $column) {
+            if (!isset($row[$column])) {
+                Log::error("Columna no encontrada: {$column}");
+                throw new \Exception("Columna requerida '".ucfirst($column)."' no encontrada en el archivo");
+            }
+        }
+
+        // Validar que los campos no estén vacíos y son del tipo correcto
+        if (!isset($row['competencia']) || !is_string($row['competencia']) || trim($row['competencia']) === '' ||
+            !isset($row['grupo']) || (string)$row['grupo'] === '' ||
+            !isset($row['rol']) || (string)$row['rol'] === '' ||
+            !isset($row['peso']) || !is_numeric($row['peso'])) {
+            Log::error('Valores inválidos:', [
+                'competencia' => $row['competencia'] ?? 'no definido',
+                'grupo' => $row['grupo'] ?? 'no definido',
+                'rol' => $row['rol'] ?? 'no definido',
+                'peso' => $row['peso'] ?? 'no definido',
+                'tipo_competencia' => gettype($row['competencia'] ?? null),
+                'tipo_grupo' => gettype($row['grupo'] ?? null),
+                'tipo_rol' => gettype($row['rol'] ?? null),
+                'tipo_peso' => gettype($row['peso'] ?? null)
+            ]);
+            throw new \Exception("Los campos Competencia, Grupo, Rol y Peso no pueden estar vacíos y el Peso debe ser un número");
+        }
+
         $periodo = Periodo::getActivo();
         if (!$periodo) {
             throw new \Exception('No hay ningún periodo activo');
         }
 
-        $competencia = Competencia::where('nombre', $row['competencia'])
-            ->where('periodo_id', $periodo->id)
-            ->first();
-        if (!$competencia) {
-            throw new \Exception("No se encontró la competencia: {$row['competencia']}");
-        }
+        // Buscar o crear la competencia
+        $competencia = Competencia::firstOrCreate(
+            ['nombre' => trim($row['competencia'])],
+            ['descripcion' => trim($row['competencia'])]
+        );
 
-        $grupo = Grupo::where('nombre', $row['grupo'])
+        // Buscar el grupo por código
+        $grupo = Grupo::where('codigo', $row['grupo'])
             ->where('periodo_id', $periodo->id)
             ->first();
+
         if (!$grupo) {
-            throw new \Exception("No se encontró el grupo: {$row['grupo']}");
+            throw new \Exception("No se encontró el grupo con código '{$row['grupo']}' en el periodo actual");
         }
 
-        $rol = Rol::where('nombre', $row['rol'])
+        // Buscar el rol por código
+        $rol = Rol::where('codigo', $row['rol'])
             ->where('periodo_id', $periodo->id)
             ->first();
+
         if (!$rol) {
-            throw new \Exception("No se encontró el rol: {$row['rol']}");
+            throw new \Exception("No se encontró el rol con código '{$row['rol']}' en el periodo actual");
         }
 
-        if (!in_array($row['sentido'], ['positiu', 'negatiu'])) {
-            throw new \Exception("El sentido debe ser 'positiu' o 'negatiu': {$row['sentido']}");
-        }
+        // Verificar si ya existe un indicador con la misma combinación en este periodo
+        $existingIndicador = Indicador::where('competencia_id', $competencia->id)
+            ->where('grupo_id', $grupo->id)
+            ->where('rol_id', $rol->id)
+            ->where('periodo_id', $periodo->id)
+            ->first();
 
-        if (!is_numeric($row['valor_minimo']) || $row['valor_minimo'] < 0 || $row['valor_minimo'] > 10) {
-            throw new \Exception("El valor mínimo debe ser un número entre 0 y 10: {$row['valor_minimo']}");
-        }
-
-        if (!is_numeric($row['valor_maximo']) || $row['valor_maximo'] < 0 || $row['valor_maximo'] > 10) {
-            throw new \Exception("El valor máximo debe ser un número entre 0 y 10: {$row['valor_maximo']}");
-        }
-
-        if ($row['valor_minimo'] > $row['valor_maximo']) {
-            throw new \Exception("El valor mínimo no puede ser mayor que el valor máximo: {$row['valor_minimo']} > {$row['valor_maximo']}");
+        if ($existingIndicador) {
+            throw new \Exception("Ya existe un indicador para la competencia '{$row['competencia']}' en el grupo '{$row['grupo']}' y rol '{$row['rol']}' en este periodo");
         }
 
         return new Indicador([
-            'nombre' => $row['nombre'],
-            'descripcion' => $row['descripcion'] ?? null,
             'competencia_id' => $competencia->id,
             'grupo_id' => $grupo->id,
             'rol_id' => $rol->id,
-            'sentido' => $row['sentido'],
-            'valor_minimo' => $row['valor_minimo'],
-            'valor_maximo' => $row['valor_maximo'],
             'periodo_id' => $periodo->id,
+            'peso' => $row['peso'],
         ]);
     }
 }

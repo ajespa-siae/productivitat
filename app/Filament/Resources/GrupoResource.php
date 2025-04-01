@@ -16,8 +16,16 @@ class GrupoResource extends Resource
     use HasActivePeriod;
 
     protected static ?string $model = Grupo::class;
-    protected static ?string $modelLabel = 'Grupo';
-    protected static ?string $pluralModelLabel = 'Grupos';
+
+    public static function getModelLabel(): string
+    {
+        return __('filament.resources.Grupos');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('filament.resources.Grupos');
+    }
 
     public static function form(Form $form): Form
     {
@@ -51,14 +59,18 @@ class GrupoResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('codigo')
+                    ->label(__('filament.columns.codigo'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('nombre')
+                    ->label(__('filament.columns.nombre'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('filament.columns.created_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label(__('filament.columns.updated_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -89,7 +101,7 @@ class GrupoResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Organización';
+        return __('Organization');
     }
 
     public static function getNavigationIcon(): string

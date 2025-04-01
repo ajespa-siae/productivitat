@@ -16,12 +16,20 @@ class RolResource extends Resource
     use HasActivePeriod;
 
     protected static ?string $model = Rol::class;
-    protected static ?string $modelLabel = 'Rol';
-    protected static ?string $pluralModelLabel = 'Roles';
+
+    public static function getModelLabel(): string
+    {
+        return __('filament.resources.Rol');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('filament.resources.Roles');
+    }
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Organización';
+        return __('Organization');
     }
 
     public static function getNavigationIcon(): string
@@ -65,15 +73,19 @@ class RolResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('codigo')
-                    ->searchable(),
                 Tables\Columns\TextColumn::make('nombre')
+                    ->label(__('filament.columns.nombre'))
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('descripcion')
+                    ->label(__('filament.columns.descripcion'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('filament.columns.created_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label(__('filament.columns.updated_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

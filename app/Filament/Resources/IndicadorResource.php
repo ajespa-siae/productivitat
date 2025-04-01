@@ -10,8 +10,9 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use App\Filament\Traits\HasActivePeriod;
-use Filament\Actions\ImportAction;
-use App\Imports\IndicadoresImport;
+use App\Models\Competencia;
+use App\Models\Grupo;
+use App\Models\Rol;
 
 class IndicadorResource extends Resource
 {
@@ -19,12 +20,20 @@ class IndicadorResource extends Resource
 
     protected static ?string $model = Indicador::class;
     protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
-    protected static ?string $modelLabel = 'Indicador';
-    protected static ?string $pluralModelLabel = 'Indicadores';
+
+    public static function getModelLabel(): string
+    {
+        return __('filament.resources.Indicadores');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('filament.resources.Indicadores');
+    }
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Evaluación';
+        return __('Evaluation');
     }
 
     public static function form(Form $form): Form
@@ -49,7 +58,7 @@ class IndicadorResource extends Resource
                 ->preload()
                 ->searchable()
                 ->options(function () {
-                    return \App\Models\Competencia::where('periodo_id', static::getDefaultPeriodoId())
+                    return Competencia::where('periodo_id', static::getDefaultPeriodoId())
                         ->pluck('nombre', 'id');
                 }),
             Forms\Components\Select::make('grupo_id')
@@ -58,7 +67,7 @@ class IndicadorResource extends Resource
                 ->preload()
                 ->searchable()
                 ->options(function () {
-                    return \App\Models\Grupo::where('periodo_id', static::getDefaultPeriodoId())
+                    return Grupo::where('periodo_id', static::getDefaultPeriodoId())
                         ->pluck('nombre', 'id');
                 }),
             Forms\Components\Select::make('rol_id')
@@ -67,7 +76,7 @@ class IndicadorResource extends Resource
                 ->preload()
                 ->searchable()
                 ->options(function () {
-                    return \App\Models\Rol::where('periodo_id', static::getDefaultPeriodoId())
+                    return Rol::where('periodo_id', static::getDefaultPeriodoId())
                         ->pluck('nombre', 'id');
                 }),
             Forms\Components\Select::make('sentido')
@@ -98,30 +107,23 @@ class IndicadorResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->headerActions([
-                Tables\Actions\ImportAction::make()
-                    ->importer(IndicadoresImport::class),
-            ])
             ->columns([
                 Tables\Columns\TextColumn::make('nombre')
+                    ->label(__('filament.columns.nombre'))
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('descripcion')
+                    ->label(__('filament.columns.descripcion'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('competencia.nombre')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('grupo.nombre')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('rol.nombre')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('sentido')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('valor_minimo')
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('valor_maximo')
-                    ->sortable(),
+                    ->label(__('filament.columns.competencia'))
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('filament.columns.created_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label(__('filament.columns.updated_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

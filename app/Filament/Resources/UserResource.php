@@ -14,12 +14,20 @@ use Illuminate\Support\Facades\Hash;
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
-    protected static ?string $modelLabel = 'Usuario';
-    protected static ?string $pluralModelLabel = 'Usuarios';
+
+    public static function getModelLabel(): string
+    {
+        return __('filament.resources.User');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('filament.resources.Users');
+    }
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Administración';
+        return __('Administration');
     }
 
     public static function getNavigationIcon(): string
@@ -32,7 +40,7 @@ class UserResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
-                    ->label('Nombre')
+                    ->label(__('filament.columns.nombre'))
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('email')
@@ -46,7 +54,7 @@ class UserResource extends Resource
                     ->dehydrated(fn (?string $state): bool => filled($state))
                     ->required(fn (string $operation): bool => $operation === 'create'),
                 Forms\Components\Toggle::make('is_admin')
-                    ->label('¿Es administrador?')
+                    ->label(__('És administrador?'))
                     ->default(false),
             ]);
     }
@@ -56,12 +64,12 @@ class UserResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
-                    ->label('Nombre')
+                    ->label(__('filament.columns.nombre'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
                 Tables\Columns\IconColumn::make('is_admin')
-                    ->label('Administrador')
+                    ->label(__('Administrador'))
                     ->boolean()
                     ->trueIcon('heroicon-o-check-badge')
                     ->falseIcon('heroicon-o-user')
@@ -78,10 +86,10 @@ class UserResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('is_admin')
-                    ->label('Tipo de usuario')
+                    ->label(__('Administrador'))
                     ->options([
-                        '1' => 'Administradores',
-                        '0' => 'Usuarios normales',
+                        '1' => 'Administrador',
+                        '0' => 'Usuari normal',
                     ])
             ])
             ->actions([

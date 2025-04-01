@@ -14,7 +14,7 @@ class Evaluacion extends Model
 {
     use HasActivePeriod;
 
-    protected $table = 'evaluaciones';
+    protected $table = 'evaluacion';
 
     protected $fillable = [
         'mando_id',

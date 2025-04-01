@@ -54,6 +54,8 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    'asset_url' => env('ASSET_URL'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
@@ -80,7 +82,7 @@ return [
 
     'locale' => 'ca',
 
-    'fallback_locale' => 'es',
+    'fallback_locale' => 'ca',
 
     'faker_locale' => 'ca_ES',
 
@@ -119,8 +121,8 @@ return [
     */
 
     'maintenance' => [
-        'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
-        'store' => env('APP_MAINTENANCE_STORE', 'database'),
+        'driver' => 'file',
+        // 'store'  => 'redis',
     ],
 
 ];

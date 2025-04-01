@@ -16,8 +16,16 @@ class MandoEmpleadoResource extends Resource
     use HasActivePeriod;
 
     protected static ?string $model = MandoEmpleado::class;
-    protected static ?string $modelLabel = 'Asignación de Mando';
-    protected static ?string $pluralModelLabel = 'Asignaciones de Mandos';
+
+    public static function getModelLabel(): string
+    {
+        return __('filament.resources.MandoEmpleados');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('filament.resources.MandoEmpleados');
+    }
 
     public static function form(Form $form): Form
     {
@@ -57,18 +65,22 @@ class MandoEmpleadoResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('mando.nombre')
-                    ->sortable(),
+                    ->label(__('filament.columns.mando'))
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('mando.nif')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('empleado.nombre')
-                    ->sortable(),
+                    ->label(__('filament.columns.empleado'))
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('empleado.nif')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('filament.columns.created_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label(__('filament.columns.updated_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -99,7 +111,7 @@ class MandoEmpleadoResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Organización';
+        return __('Organization');
     }
 
     public static function getNavigationIcon(): string

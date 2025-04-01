@@ -13,12 +13,20 @@ use Filament\Tables\Table;
 class PeriodoResource extends Resource
 {
     protected static ?string $model = Periodo::class;
-    protected static ?string $modelLabel = 'Periodo';
-    protected static ?string $pluralModelLabel = 'Periodos';
+
+    public static function getModelLabel(): string
+    {
+        return __('filament.resources.Periodo');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('filament.resources.Periodos');
+    }
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Periodos';
+        return __('Periods');
     }
 
     public static function getNavigationIcon(): string
@@ -49,21 +57,27 @@ class PeriodoResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('nombre')
+                    ->label(__('filament.columns.nombre'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('fecha_inicio')
+                    ->label(__('filament.columns.fecha_inicio'))
                     ->date()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('fecha_fin')
+                    ->label(__('filament.columns.fecha_fin'))
                     ->date()
                     ->sortable(),
                 Tables\Columns\IconColumn::make('activo')
+                    ->label(__('filament.columns.activo'))
                     ->boolean()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('filament.columns.created_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label(__('filament.columns.updated_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

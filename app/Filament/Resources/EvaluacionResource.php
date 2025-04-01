@@ -16,12 +16,20 @@ class EvaluacionResource extends Resource
     use HasActivePeriod;
 
     protected static ?string $model = Evaluacion::class;
-    protected static ?string $modelLabel = 'Evaluación';
-    protected static ?string $pluralModelLabel = 'Evaluaciones';
+
+    public static function getModelLabel(): string
+    {
+        return __('filament.resources.Evaluaciones');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('filament.resources.Evaluaciones');
+    }
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Evaluación';
+        return __('Evaluation');
     }
 
     public static function getNavigationIcon(): string
@@ -80,23 +88,31 @@ class EvaluacionResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('mando.nombre')
+                    ->label(__('filament.columns.mando'))
                     ->sortable(),
                 Tables\Columns\TextColumn::make('mando.nif')
+                    ->label(__('filament.columns.nif'))
                     ->sortable(),
                 Tables\Columns\TextColumn::make('empleado.nombre')
+                    ->label(__('filament.columns.empleado'))
                     ->sortable(),
                 Tables\Columns\TextColumn::make('empleado.nif')
+                    ->label(__('filament.columns.nif'))
                     ->sortable(),
                 Tables\Columns\TextColumn::make('indicador.nombre')
+                    ->label(__('filament.columns.indicador'))
                     ->sortable(),
                 Tables\Columns\TextColumn::make('puntuacion')
+                    ->label(__('filament.columns.puntuacion'))
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('filament.columns.created_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label(__('filament.columns.updated_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

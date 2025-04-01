@@ -16,12 +16,20 @@ class CompetenciaResource extends Resource
     use HasActivePeriod;
 
     protected static ?string $model = Competencia::class;
-    protected static ?string $modelLabel = 'Competencia';
-    protected static ?string $pluralModelLabel = 'Competencias';
+
+    public static function getModelLabel(): string
+    {
+        return __('filament.resources.Competencia');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('filament.resources.Competencias');
+    }
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Evaluación';
+        return __('Evaluation');
     }
 
     public static function getNavigationIcon(): string
@@ -55,12 +63,18 @@ class CompetenciaResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('nombre')
+                    ->label(__('filament.columns.nombre'))
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('descripcion')
+                    ->label(__('filament.columns.descripcion'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('filament.columns.created_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label(__('filament.columns.updated_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

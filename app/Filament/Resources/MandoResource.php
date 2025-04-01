@@ -16,12 +16,20 @@ class MandoResource extends Resource
     use HasActivePeriod;
 
     protected static ?string $model = Mando::class;
-    protected static ?string $modelLabel = 'Mando';
-    protected static ?string $pluralModelLabel = 'Mandos';
+
+    public static function getModelLabel(): string
+    {
+        return __('filament.resources.Mandos');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('filament.resources.Mandos');
+    }
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Organización';
+        return __('Organization');
     }
 
     public static function getNavigationIcon(): string
@@ -64,16 +72,21 @@ class MandoResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('nombre')
+                    ->label(__('filament.columns.nombre'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('apellidos')
+                    ->label(__('filament.columns.apellidos'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('nif')
+                    ->label(__('filament.columns.nif'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('filament.columns.created_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label(__('filament.columns.updated_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

@@ -17,8 +17,16 @@ class EmpleadoResource extends Resource
 
     protected static ?string $model = Empleado::class;
     protected static ?string $navigationIcon = 'heroicon-o-user';
-    protected static ?string $modelLabel = 'Empleado';
-    protected static ?string $pluralModelLabel = 'Empleados';
+
+    public static function getModelLabel(): string
+    {
+        return __('filament.resources.Empleados');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('filament.resources.Empleados');
+    }
 
     public static function form(Form $form): Form
     {
@@ -70,20 +78,27 @@ class EmpleadoResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('nombre')
+                    ->label(__('filament.columns.nombre'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('apellidos')
+                    ->label(__('filament.columns.apellidos'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('nif')
+                    ->label(__('filament.columns.nif'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('grupo.nombre')
+                    ->label(__('filament.columns.grupo'))
                     ->sortable(),
                 Tables\Columns\TextColumn::make('rol.nombre')
+                    ->label(__('filament.columns.rol'))
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('filament.columns.created_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label(__('filament.columns.updated_at'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -114,7 +129,7 @@ class EmpleadoResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Organización';
+        return __('Organization');
     }
 
     public static function getNavigationIcon(): string
