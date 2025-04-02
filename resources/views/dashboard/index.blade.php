@@ -50,8 +50,8 @@
                                     <dd class="mt-1 text-sm text-gray-900">{{ $user->email }}</dd>
                                 </div>
                                 <div class="bg-gray-50 px-4 py-3 rounded-lg">
-                                    <dt class="text-sm font-medium text-gray-500">Rol</dt>
-                                    <dd class="mt-1 text-sm text-gray-900">{{ $user->is_admin ? 'Administrador' : 'Usuario' }}</dd>
+                                    <dt class="text-sm font-medium text-gray-500">NIF</dt>
+                                    <dd class="mt-1 text-sm text-gray-900">{{ $user->nif }}</dd>
                                 </div>
                             </dl>
                         </div>
