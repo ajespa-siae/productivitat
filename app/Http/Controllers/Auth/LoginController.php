@@ -58,16 +58,6 @@ class LoginController extends Controller
                         $employeeId = $ldapUser->getFirstAttribute('employeeid');
                         
                         if (!$employeeId) {
-                            // Si no existe employeeID, buscar en otros atributos
-                            $possibleAttributes = [
-                                'employeenumber',
-                                'employeetype',
-                                'uid',
-                                'description',
-                                'extensionattribute1',
-                                'extensionattribute2'
-                            ];
-                            
                             foreach ($possibleAttributes as $attr) {
                                 $value = $ldapUser->getFirstAttribute($attr);
                                 if ($value) {
