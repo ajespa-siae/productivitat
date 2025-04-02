@@ -52,10 +52,6 @@
                                class="rounded border-gray-300 text-amber-600 shadow-sm focus:ring-amber-500">
                         <span class="ml-2 text-sm text-gray-600">{{ __('Remember') }}</span>
                     </label>
-                    
-                    <a href="{{ route('filament.admin.pages.dashboard') }}" class="text-sm text-amber-600 hover:text-amber-500">
-                        {{ __('Panel Admin') }}
-                    </a>
                 </div>
 
                 <div>
