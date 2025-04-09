@@ -15,7 +15,9 @@ class Indicador extends Model
 
     protected $fillable = [
         'nombre',
-        'descripcion',
+        'tipo_evaluacion',
+        'tipo_indicador',
+        'periodicidad',
         'competencia_id',
         'grupo_id',
         'rol_id',

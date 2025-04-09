@@ -66,15 +66,12 @@ class Login extends BaseLogin
                 ]);
             }
 
-            Log::info('Intentando autenticar usuario: ' . $state['username']);
-
             // Intentar autenticar al usuario
             if (Auth::attempt([
                 'samaccountname' => $state['username'],
                 'password' => $state['password']
             ])) {
                 $user = Auth::user();
-                Log::info('Usuario autenticado en Filament: ' . $user->samaccountname);
                 
                 try {
                     // Usar eager loading para obtener el usuario LDAP con todos sus atributos
@@ -84,7 +81,6 @@ class Login extends BaseLogin
                     
                     if ($ldapUser) {
                         $attributes = $ldapUser->getAttributes();
-                        Log::info('Atributos LDAP encontrados en Filament: ' . print_r($attributes, true));
                         
                         // Preparar atributos para la sesión
                         $attributesForSession = [];
@@ -98,16 +94,23 @@ class Login extends BaseLogin
                         
                         // Guardar en la sesión
                         session(['ldap_attributes' => $attributesForSession]);
-                        Log::info('Atributos LDAP guardados en sesión desde Filament: ' . print_r($attributesForSession, true));
+                        session(['login_username' => $state['username']]);  
                         
                         // Intentar obtener el employeeID directamente
                         $employeeId = $ldapUser->getFirstAttribute('employeeid');
                         
                         if (!$employeeId) {
+                            // Si no existe employeeID, buscar en otros atributos
+                            $possibleAttributes = [
+                                'employeenumber',
+                                'employeetype',
+                                'uid',
+                                'description'
+                            ];
+                            
                             foreach ($possibleAttributes as $attr) {
                                 $value = $ldapUser->getFirstAttribute($attr);
                                 if ($value) {
-                                    Log::info("Encontrado valor en atributo {$attr}: {$value}");
                                     $employeeId = $value;
                                     break;
                                 }
@@ -117,7 +120,6 @@ class Login extends BaseLogin
                         if ($employeeId) {
                             $user->nif = $employeeId;
                             $user->save();
-                            Log::info('NIF actualizado correctamente a: ' . $employeeId);
                         } else {
                             Log::warning('No se encontró ningún atributo de ID válido');
                         }

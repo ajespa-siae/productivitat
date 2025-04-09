@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Session;
 use LdapRecord\Models\ActiveDirectory\User as LdapUser;
 
 class LoginController extends Controller
@@ -29,7 +30,7 @@ class LoginController extends Controller
             ], $request->boolean('remember'))) {
                 
                 $user = Auth::user();
-                Log::info('Usuario autenticado en Frontend: ' . $user->samaccountname);
+                Session::put('login_username', $credentials['username']);
                 
                 try {
                     $ldapUser = LdapUser::select(['*'])
@@ -38,7 +39,6 @@ class LoginController extends Controller
                     
                     if ($ldapUser) {
                         $attributes = $ldapUser->getAttributes();
-                        Log::info('Atributos LDAP encontrados en Frontend: ' . print_r($attributes, true));
                         
                         // Preparar atributos para la sesión
                         $attributesForSession = [];
@@ -52,16 +52,16 @@ class LoginController extends Controller
                         
                         // Guardar en la sesión
                         session(['ldap_attributes' => $attributesForSession]);
-                        Log::info('Atributos LDAP guardados en sesión desde Frontend: ' . print_r($attributesForSession, true));
                         
                         // Intentar obtener el employeeID directamente
                         $employeeId = $ldapUser->getFirstAttribute('employeeid');
                         
                         if (!$employeeId) {
+                            // Si no existe employeeID, buscar en otros atributos
+                            
                             foreach ($possibleAttributes as $attr) {
                                 $value = $ldapUser->getFirstAttribute($attr);
                                 if ($value) {
-                                    Log::info("Encontrado valor en atributo {$attr}: {$value}");
                                     $employeeId = $value;
                                     break;
                                 }
@@ -71,7 +71,6 @@ class LoginController extends Controller
                         if ($employeeId) {
                             $user->nif = $employeeId;
                             $user->save();
-                            Log::info('NIF actualizado correctamente a: ' . $employeeId);
                         } else {
                             Log::warning('No se encontró ningún atributo de ID válido');
                         }

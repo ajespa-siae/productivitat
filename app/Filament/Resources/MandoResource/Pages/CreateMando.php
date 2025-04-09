@@ -9,4 +9,10 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateMando extends CreateRecord
 {
     protected static string $resource = MandoResource::class;
+
+    protected function getCreateFormAction(): Actions\Action
+    {
+        return parent::getCreateFormAction()
+            ->label('Afegir');
+    }
 }

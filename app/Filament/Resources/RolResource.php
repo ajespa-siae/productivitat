@@ -37,26 +37,23 @@ class RolResource extends Resource
         return 'heroicon-o-identification';
     }
 
-    public static function getNavigationSort(): ?int
-    {
-        return 5;
-    }
-
     public static function form(Form $form): Form
     {
         return $form->schema(static::getFormSchema());
     }
 
-    protected static function getResourceFormSchema(): array
+    protected static function getFormSchema(): array
     {
         return [
             Forms\Components\TextInput::make('codigo')
+                ->label('Codi')
                 ->required()
                 ->maxLength(255)
                 ->unique(ignoreRecord: true, modifyRuleUsing: function ($rule) {
                     return $rule->where('periodo_id', static::getDefaultPeriodoId());
                 }),
             Forms\Components\TextInput::make('nombre')
+                ->label('Nom')
                 ->required()
                 ->maxLength(255)
                 ->unique(ignoreRecord: true, modifyRuleUsing: function ($rule) {
@@ -73,19 +70,19 @@ class RolResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('nombre')
-                    ->label(__('filament.columns.nombre'))
+                Tables\Columns\TextColumn::make('codigo')
+                    ->label('Codi')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('descripcion')
-                    ->label(__('filament.columns.descripcion'))
+                Tables\Columns\TextColumn::make('nombre')
+                    ->label('Nom')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label(__('filament.columns.created_at'))
+                    ->label('Creat el')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->label(__('filament.columns.updated_at'))
+                    ->label('Actualitzat el')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -112,5 +109,10 @@ class RolResource extends Resource
             'create' => Pages\CreateRol::route('/create'),
             'edit' => Pages\EditRol::route('/{record}/edit'),
         ];
+    }
+
+    public static function getNavigationSort(): ?int
+    {
+        return 7;
     }
 }

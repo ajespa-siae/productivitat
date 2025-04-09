@@ -9,4 +9,10 @@ use Filament\Resources\Pages\CreateRecord;
 class CreatePeriodo extends CreateRecord
 {
     protected static string $resource = PeriodoResource::class;
+
+    protected function getCreateFormAction(): Actions\Action
+    {
+        return parent::getCreateFormAction()
+            ->label('Afegir');
+    }
 }

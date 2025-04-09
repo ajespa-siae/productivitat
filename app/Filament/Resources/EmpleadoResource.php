@@ -30,7 +30,7 @@ class EmpleadoResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form->schema(static::getFormSchema());
+        return $form->schema(static::getResourceFormSchema());
     }
 
     protected static function getResourceFormSchema(): array
@@ -45,31 +45,7 @@ class EmpleadoResource extends Resource
             Forms\Components\TextInput::make('nif')
                 ->required()
                 ->maxLength(255)
-                ->unique(ignoreRecord: true, modifyRuleUsing: function ($rule) {
-                    return $rule->where('periodo_id', static::getDefaultPeriodoId());
-                }),
-            Forms\Components\Select::make('grupo_id')
-                ->relationship('grupo', 'nombre')
-                ->required()
-                ->preload()
-                ->searchable()
-                ->options(function () {
-                    return \App\Models\Grupo::where('periodo_id', static::getDefaultPeriodoId())
-                        ->pluck('nombre', 'id');
-                }),
-            Forms\Components\Select::make('rol_id')
-                ->relationship('rol', 'nombre')
-                ->required()
-                ->preload()
-                ->searchable()
-                ->options(function () {
-                    return \App\Models\Rol::where('periodo_id', static::getDefaultPeriodoId())
-                        ->pluck('nombre', 'id');
-                }),
-            Forms\Components\Select::make('periodo_id')
-                ->relationship('periodo', 'nombre')
-                ->required()
-                ->hidden(),
+                ->unique(ignoreRecord: true),
         ];
     }
 
@@ -86,12 +62,6 @@ class EmpleadoResource extends Resource
                 Tables\Columns\TextColumn::make('nif')
                     ->label(__('filament.columns.nif'))
                     ->searchable(),
-                Tables\Columns\TextColumn::make('grupo.nombre')
-                    ->label(__('filament.columns.grupo'))
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('rol.nombre')
-                    ->label(__('filament.columns.rol'))
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label(__('filament.columns.created_at'))
                     ->dateTime()
@@ -114,8 +84,7 @@ class EmpleadoResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ])
-            ->modifyQueryUsing(fn ($query) => $query->where('periodo_id', static::getDefaultPeriodoId()));
+            ]);
     }
 
     public static function getPages(): array
@@ -135,5 +104,10 @@ class EmpleadoResource extends Resource
     public static function getNavigationIcon(): string
     {
         return 'heroicon-o-user';
+    }
+
+    public static function getNavigationSort(): ?int
+    {
+        return 1;
     }
 }

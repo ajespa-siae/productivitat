@@ -38,21 +38,18 @@ class IndicadorResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form->schema(static::getFormSchema());
+        return $form->schema(app(static::class)->getResourceFormSchema());
     }
 
-    protected static function getResourceFormSchema(): array
+    protected function getResourceFormSchema(): array
     {
         return [
             Forms\Components\TextInput::make('nombre')
+                ->label('Nom')
                 ->required()
-                ->maxLength(255)
-                ->unique(ignoreRecord: true, modifyRuleUsing: function ($rule) {
-                    return $rule->where('periodo_id', static::getDefaultPeriodoId());
-                }),
-            Forms\Components\TextInput::make('descripcion')
                 ->maxLength(255),
             Forms\Components\Select::make('competencia_id')
+                ->label('Competència')
                 ->relationship('competencia', 'nombre')
                 ->required()
                 ->preload()
@@ -61,6 +58,29 @@ class IndicadorResource extends Resource
                     return Competencia::where('periodo_id', static::getDefaultPeriodoId())
                         ->pluck('nombre', 'id');
                 }),
+            Forms\Components\Select::make('tipo_evaluacion')
+                ->label('Tipus avaluació')
+                ->options([
+                    'Registre' => 'Registre',
+                    'Automàtic' => 'Automàtic',
+                    'Enquesta' => 'Enquesta',
+                ])
+                ->required()
+                ->default('Registre'),
+            Forms\Components\Select::make('tipo_indicador')
+                ->label('Tipus indicador')
+                ->options([
+                    'Objectiu' => 'Objectiu',
+                    'Subjectiu' => 'Subjectiu',
+                ])
+                ->required(),
+            Forms\Components\Select::make('periodicidad')
+                ->label('Periodicitat')
+                ->options([
+                    'Cada 6 mesos' => 'Cada 6 mesos',
+                    'Continuat' => 'Continuat',
+                ])
+                ->required(),
             Forms\Components\Select::make('grupo_id')
                 ->relationship('grupo', 'nombre')
                 ->required()
@@ -81,8 +101,8 @@ class IndicadorResource extends Resource
                 }),
             Forms\Components\Select::make('sentido')
                 ->options([
-                    'positiu' => 'Positiu',
-                    'negatiu' => 'Negatiu',
+                    'Positiu' => 'Positiu',
+                    'Negatiu' => 'Negatiu',
                 ])
                 ->required(),
             Forms\Components\TextInput::make('valor_minimo')
@@ -108,22 +128,39 @@ class IndicadorResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('grupo.nombre')
+                    ->label('Grup')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('rol.nombre')
+                    ->label('Rol')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('nombre')
-                    ->label(__('filament.columns.nombre'))
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('descripcion')
-                    ->label(__('filament.columns.descripcion'))
-                    ->searchable(),
+                    ->label('Nom')
+                    ->searchable()
+                    ->wrap(false)
+                    ->tooltip(function (Tables\Columns\TextColumn $column): ?string {
+                        return $column->getState();
+                    })
+                    ->limit(50),
                 Tables\Columns\TextColumn::make('competencia.nombre')
-                    ->label(__('filament.columns.competencia'))
+                    ->label('Competència')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('tipo_evaluacion')
+                    ->label('Tipus avaluació')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('tipo_indicador')
+                    ->label('Tipus indicador')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('periodicidad')
+                    ->label('Periodicitat')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label(__('filament.columns.created_at'))
+                    ->label('Creat el')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->label(__('filament.columns.updated_at'))
+                    ->label('Actualitzat el')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -147,6 +184,7 @@ class IndicadorResource extends Resource
     {
         return [
             'index' => Pages\ListIndicadors::route('/'),
+            'list' => Pages\ListIndicadors::route('/list'),
             'create' => Pages\CreateIndicador::route('/create'),
             'edit' => Pages\EditIndicador::route('/{record}/edit'),
         ];

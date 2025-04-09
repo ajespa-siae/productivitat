@@ -22,12 +22,49 @@ class IndicadoresImport implements ToModel, WithHeadingRow
         
         Log::info('Datos después de convertir a minúsculas:', $row);
 
+        // Mapear las columnas en catalán a las columnas en español
+        $row = array_combine(
+            array_map(function ($key) {
+                return match($key) {
+                    'competencia' => 'competencia',
+                    'competència' => 'competencia',
+                    'grup' => 'grupo',
+                    'tipo' => 'tipo',
+                    'tipus' => 'tipo',
+                    'sentit' => 'sentido',
+                    'valor_minim' => 'valor_minimo',
+                    'valor_mínim' => 'valor_minimo',
+                    'valor_maxim' => 'valor_maximo',
+                    'valor_màxim' => 'valor_maximo',
+                    default => $key
+                };
+            }, array_keys($row)),
+            array_values($row)
+        );
+
         // Validar que las columnas requeridas existan
-        $required_columns = ['competencia', 'grupo', 'rol', 'peso'];
+        $required_columns = [
+            'competencia',  // competència
+            'grupo',        // grup
+            'rol',         // rol
+            'tipo',        // tipus
+            'sentido',     // sentit
+            'valor_minimo',// valor_mínim
+            'valor_maximo' // valor_màxim
+        ];
+        $column_names = [
+            'competencia' => 'Competència',
+            'grupo' => 'Grup',
+            'rol' => 'Rol',
+            'tipo' => 'Tipus',
+            'sentido' => 'Sentit',
+            'valor_minimo' => 'Valor mínim',
+            'valor_maximo' => 'Valor màxim'
+        ];
         foreach ($required_columns as $column) {
             if (!isset($row[$column])) {
                 Log::error("Columna no encontrada: {$column}");
-                throw new \Exception("Columna requerida '".ucfirst($column)."' no encontrada en el archivo");
+                throw new \Exception("Columna requerida '".$column_names[$column]."' no trobada a l'arxiu");
             }
         }
 
@@ -35,23 +72,49 @@ class IndicadoresImport implements ToModel, WithHeadingRow
         if (!isset($row['competencia']) || !is_string($row['competencia']) || trim($row['competencia']) === '' ||
             !isset($row['grupo']) || (string)$row['grupo'] === '' ||
             !isset($row['rol']) || (string)$row['rol'] === '' ||
-            !isset($row['peso']) || !is_numeric($row['peso'])) {
+            !isset($row['tipo']) || (string)$row['tipo'] === '' ||
+            !isset($row['sentido']) || (string)$row['sentido'] === '' ||
+            !isset($row['valor_minimo']) || !is_numeric($row['valor_minimo']) ||
+            !isset($row['valor_maximo']) || !is_numeric($row['valor_maximo'])) {
             Log::error('Valores inválidos:', [
                 'competencia' => $row['competencia'] ?? 'no definido',
                 'grupo' => $row['grupo'] ?? 'no definido',
                 'rol' => $row['rol'] ?? 'no definido',
-                'peso' => $row['peso'] ?? 'no definido',
+                'tipo' => $row['tipo'] ?? 'no definido',
+                'sentido' => $row['sentido'] ?? 'no definido',
+                'valor_minimo' => $row['valor_minimo'] ?? 'no definido',
+                'valor_maximo' => $row['valor_maximo'] ?? 'no definido',
                 'tipo_competencia' => gettype($row['competencia'] ?? null),
                 'tipo_grupo' => gettype($row['grupo'] ?? null),
                 'tipo_rol' => gettype($row['rol'] ?? null),
-                'tipo_peso' => gettype($row['peso'] ?? null)
+                'tipo_tipo' => gettype($row['tipo'] ?? null),
+                'tipo_sentido' => gettype($row['sentido'] ?? null),
+                'tipo_valor_minimo' => gettype($row['valor_minimo'] ?? null),
+                'tipo_valor_maximo' => gettype($row['valor_maximo'] ?? null)
             ]);
-            throw new \Exception("Los campos Competencia, Grupo, Rol y Peso no pueden estar vacíos y el Peso debe ser un número");
+            throw new \Exception("Les columnes Competència, Grup, Rol, Tipus, Sentit, Valor mínim i Valor màxim no poden estar buides. Les valors mínim i màxim han de ser números.");
+        }
+
+        // Validar que el tipo sea válido
+        $tipo = ucfirst(strtolower(trim($row['tipo'])));
+        if (!in_array($tipo, ['Objectiu', 'Subjectiu'])) {
+            throw new \Exception("El tipus ha de ser 'Objectiu' o 'Subjectiu'");
+        }
+
+        // Validar que el sentido sea válido
+        $sentido = ucfirst(strtolower(trim($row['sentido'])));
+        if (!in_array($sentido, ['Positiu', 'Negatiu'])) {
+            throw new \Exception("El sentit ha de ser 'Positiu' o 'Negatiu'");
+        }
+
+        // Validar que valor_minimo sea menor que valor_maximo
+        if ($row['valor_minimo'] >= $row['valor_maximo']) {
+            throw new \Exception("El valor mínim ha de ser menor que el valor màxim");
         }
 
         $periodo = Periodo::getActivo();
         if (!$periodo) {
-            throw new \Exception('No hay ningún periodo activo');
+            throw new \Exception('No existeix un període actiu');
         }
 
         // Buscar o crear la competencia
@@ -66,7 +129,7 @@ class IndicadoresImport implements ToModel, WithHeadingRow
             ->first();
 
         if (!$grupo) {
-            throw new \Exception("No se encontró el grupo con código '{$row['grupo']}' en el periodo actual");
+            throw new \Exception("No existeix un grup amb codi '{$row['grupo']}' en el període actual");
         }
 
         // Buscar el rol por código
@@ -75,7 +138,7 @@ class IndicadoresImport implements ToModel, WithHeadingRow
             ->first();
 
         if (!$rol) {
-            throw new \Exception("No se encontró el rol con código '{$row['rol']}' en el periodo actual");
+            throw new \Exception("No existeix un rol amb codi '{$row['rol']}' en el període actual");
         }
 
         // Verificar si ya existe un indicador con la misma combinación en este periodo
@@ -86,7 +149,7 @@ class IndicadoresImport implements ToModel, WithHeadingRow
             ->first();
 
         if ($existingIndicador) {
-            throw new \Exception("Ya existe un indicador para la competencia '{$row['competencia']}' en el grupo '{$row['grupo']}' y rol '{$row['rol']}' en este periodo");
+            throw new \Exception("Ja existeix un indicador per a la competència '{$row['competencia']}' en el grup '{$row['grupo']}' i rol '{$row['rol']}' en aquest període");
         }
 
         return new Indicador([
@@ -94,7 +157,10 @@ class IndicadoresImport implements ToModel, WithHeadingRow
             'grupo_id' => $grupo->id,
             'rol_id' => $rol->id,
             'periodo_id' => $periodo->id,
-            'peso' => $row['peso'],
+            'tipo' => $tipo,
+            'sentido' => $sentido,
+            'valor_minimo' => $row['valor_minimo'],
+            'valor_maximo' => $row['valor_maximo'],
         ]);
     }
 }

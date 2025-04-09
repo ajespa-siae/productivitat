@@ -3,38 +3,37 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\Traits\HasActivePeriod;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Empleado extends Model
 {
-    use HasActivePeriod;
-
     protected $table = 'empleados';
 
     protected $fillable = [
         'nombre',
         'apellidos',
         'nif',
-        'grupo_id',
-        'rol_id',
-        'periodo_id',
     ];
 
-    public function grupo(): BelongsTo
+    public function grupos(): BelongsToMany
     {
-        return $this->belongsTo(Grupo::class);
+        return $this->belongsToMany(Grupo::class, 'roles_empleados')
+                    ->withPivot('rol_id')
+                    ->withTimestamps();
     }
 
-    public function rol(): BelongsTo
+    public function roles(): BelongsToMany
     {
-        return $this->belongsTo(Rol::class);
+        return $this->belongsToMany(Rol::class, 'roles_empleados')
+                    ->withPivot('grupo_id')
+                    ->withTimestamps();
     }
 
-    public function periodo(): BelongsTo
+    public function rolesEmpleados(): HasMany
     {
-        return $this->belongsTo(Periodo::class);
+        return $this->hasMany(RolEmpleado::class, 'nif', 'nif');
     }
 
     public function evaluaciones(): HasMany
@@ -45,5 +44,10 @@ class Empleado extends Model
     public function mandosEmpleados(): HasMany
     {
         return $this->hasMany(MandoEmpleado::class);
+    }
+
+    public function user(): HasOne
+    {
+        return $this->hasOne(User::class, 'nif', 'nif');
     }
 }

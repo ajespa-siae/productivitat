@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\MandoResource\Pages;
 use App\Models\Mando;
+use App\Models\Empleado;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -45,15 +46,24 @@ class MandoResource extends Resource
     protected static function getFormSchema(): array
     {
         return [
-            Forms\Components\TextInput::make('nombre')
+            Forms\Components\Select::make('nif')
+                ->label(__('filament.columns.nif'))
                 ->required()
-                ->maxLength(255),
-            Forms\Components\TextInput::make('apellidos')
-                ->required()
-                ->maxLength(255),
-            Forms\Components\TextInput::make('nif')
-                ->required()
-                ->maxLength(255)
+                ->searchable()
+                ->preload()
+                ->getSearchResultsUsing(function (string $search) {
+                    return Empleado::query()
+                        ->where(function ($query) use ($search) {
+                            $query->where('nombre', 'ilike', "%{$search}%")
+                                  ->orWhere('apellidos', 'ilike', "%{$search}%")
+                                  ->orWhere('nif', 'ilike', "%{$search}%");
+                        })
+                        ->get()
+                        ->mapWithKeys(function ($empleado) {
+                            return [$empleado->nif => "{$empleado->nombre} {$empleado->apellidos} ({$empleado->nif})"];
+                        })
+                        ->toArray();
+                })
                 ->unique(ignoreRecord: true, modifyRuleUsing: function ($rule) {
                     return $rule->where('periodo_id', static::getDefaultPeriodoId());
                 }),
@@ -71,14 +81,21 @@ class MandoResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('nombre')
+                Tables\Columns\TextColumn::make('empleado.nombre')
                     ->label(__('filament.columns.nombre'))
+                    ->sortable()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('apellidos')
+                Tables\Columns\TextColumn::make('empleado.apellidos')
                     ->label(__('filament.columns.apellidos'))
+                    ->sortable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('nif')
                     ->label(__('filament.columns.nif'))
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('grupo.nombre')
+                    ->label(__('filament.columns.grupo'))
+                    ->sortable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label(__('filament.columns.created_at'))
@@ -113,5 +130,10 @@ class MandoResource extends Resource
             'create' => Pages\CreateMando::route('/create'),
             'edit' => Pages\EditMando::route('/{record}/edit'),
         ];
+    }
+
+    public static function getNavigationSort(): ?int
+    {
+        return 3;
     }
 }

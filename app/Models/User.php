@@ -11,6 +11,7 @@ use Illuminate\Notifications\Notifiable;
 use LdapRecord\Laravel\Auth\LdapAuthenticatable;
 use LdapRecord\Laravel\Auth\AuthenticatesWithLdap;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\Mando;
 
 class User extends Authenticatable implements FilamentUser, LdapAuthenticatable
 {
@@ -68,5 +69,13 @@ class User extends Authenticatable implements FilamentUser, LdapAuthenticatable
     public function getLdapGuidColumn(): string
     {
         return 'guid';
+    }
+
+    /**
+     * Verifica si el usuario es un mando
+     */
+    public function getIsMandoAttribute(): bool
+    {
+        return Mando::where('nif', $this->nif)->exists();
     }
 }

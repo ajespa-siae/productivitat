@@ -3,8 +3,6 @@
 namespace App\Imports;
 
 use App\Models\Empleado;
-use App\Models\Periodo;
-use App\Models\Rol;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Illuminate\Support\Facades\Log;
@@ -20,58 +18,62 @@ class EmpleadosImport implements ToModel, WithHeadingRow
         
         Log::info('Datos después de convertir a minúsculas:', $row);
 
+        // Mapear las columnas en catalán a las columnas en español
+        $row = array_combine(
+            array_map(function ($key) {
+                return match($key) {
+                    'nom' => 'nombre',
+                    'cognoms' => 'apellidos',
+                    default => $key
+                };
+            }, array_keys($row)),
+            array_values($row)
+        );
+
         // Validar que las columnas requeridas existan
-        $required_columns = ['nombre', 'codigo', 'rol'];
+        $required_columns = [
+            'nombre',    // nom
+            'apellidos', // cognoms
+            'nif',      // nif
+        ];
+        $column_names = [
+            'nombre' => 'Nom',
+            'apellidos' => 'Cognoms',
+            'nif' => 'NIF',
+        ];
         foreach ($required_columns as $column) {
             if (!isset($row[$column])) {
                 Log::error("Columna no encontrada: {$column}");
-                throw new \Exception("Columna requerida '".ucfirst($column)."' no encontrada en el archivo");
+                throw new \Exception("Columna requerida '".$column_names[$column]."' no trobada a l'arxiu");
             }
         }
 
         // Validar que los campos no estén vacíos y son del tipo correcto
         if (!isset($row['nombre']) || !is_string($row['nombre']) || trim($row['nombre']) === '' ||
-            !isset($row['codigo']) || (string)$row['codigo'] === '' ||
-            !isset($row['rol']) || (string)$row['rol'] === '') {
+            !isset($row['apellidos']) || !is_string($row['apellidos']) || trim($row['apellidos']) === '' ||
+            !isset($row['nif']) || (string)$row['nif'] === '') {
             Log::error('Valores inválidos:', [
                 'nombre' => $row['nombre'] ?? 'no definido',
-                'codigo' => $row['codigo'] ?? 'no definido',
-                'rol' => $row['rol'] ?? 'no definido',
+                'apellidos' => $row['apellidos'] ?? 'no definido',
+                'nif' => $row['nif'] ?? 'no definido',
                 'tipo_nombre' => gettype($row['nombre'] ?? null),
-                'tipo_codigo' => gettype($row['codigo'] ?? null),
-                'tipo_rol' => gettype($row['rol'] ?? null)
+                'tipo_apellidos' => gettype($row['apellidos'] ?? null),
+                'tipo_nif' => gettype($row['nif'] ?? null),
             ]);
-            throw new \Exception("Los campos Nombre, Código y Rol no pueden estar vacíos");
+            throw new \Exception("Els camps Nom, Cognoms i NIF no poden estar buits");
         }
 
-        $periodo = Periodo::getActivo();
-        if (!$periodo) {
-            throw new \Exception('No hay ningún periodo activo');
-        }
-
-        // Buscar el rol por código
-        $rol = Rol::where('codigo', $row['rol'])
-            ->where('periodo_id', $periodo->id)
-            ->first();
-
-        if (!$rol) {
-            throw new \Exception("No se encontró el rol con código '{$row['rol']}' en el periodo actual");
-        }
-
-        // Verificar si ya existe un empleado con el mismo código en este periodo
-        $existingEmpleado = Empleado::where('codigo', $row['codigo'])
-            ->where('periodo_id', $periodo->id)
-            ->first();
+        // Verificar si ya existe un empleado con el mismo NIF
+        $existingEmpleado = Empleado::where('nif', $row['nif'])->first();
 
         if ($existingEmpleado) {
-            throw new \Exception("Ya existe un empleado con el código '{$row['codigo']}' en este periodo");
+            throw new \Exception("Ja existeix un empleat amb NIF '{$row['nif']}'");
         }
 
         return new Empleado([
             'nombre' => trim($row['nombre']),
-            'codigo' => trim((string)$row['codigo']),
-            'rol_id' => $rol->id,
-            'periodo_id' => $periodo->id,
+            'apellidos' => trim($row['apellidos']),
+            'nif' => trim((string)$row['nif']),
         ]);
     }
 }

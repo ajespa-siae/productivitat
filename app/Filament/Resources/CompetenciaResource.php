@@ -39,12 +39,17 @@ class CompetenciaResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form->schema(static::getFormSchema());
+        $instance = new static();
+        return $form->schema($instance->getFormSchema());
     }
 
     protected static function getResourceFormSchema(): array
     {
         return [
+            Forms\Components\TextInput::make('id')
+                ->label('ID')
+                ->disabled()
+                ->visible(fn ($record) => $record !== null),
             Forms\Components\TextInput::make('nombre')
                 ->required()
                 ->maxLength(255)
@@ -62,11 +67,11 @@ class CompetenciaResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('id')
+                    ->label('ID')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('nombre')
                     ->label(__('filament.columns.nombre'))
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('descripcion')
-                    ->label(__('filament.columns.descripcion'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label(__('filament.columns.created_at'))

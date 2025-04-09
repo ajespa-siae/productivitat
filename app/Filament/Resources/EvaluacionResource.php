@@ -5,139 +5,145 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\EvaluacionResource\Pages;
 use App\Models\Evaluacion;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Table;
-use App\Filament\Traits\HasActivePeriod;
+use Illuminate\Database\Eloquent\Builder;
 
 class EvaluacionResource extends Resource
 {
-    use HasActivePeriod;
-
     protected static ?string $model = Evaluacion::class;
 
-    public static function getModelLabel(): string
-    {
-        return __('filament.resources.Evaluaciones');
-    }
-
-    public static function getPluralModelLabel(): string
-    {
-        return __('filament.resources.Evaluaciones');
-    }
+    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
 
     public static function getNavigationGroup(): ?string
     {
         return __('Evaluation');
     }
 
-    public static function getNavigationIcon(): string
+    public static function getNavigationLabel(): string
     {
-        return 'heroicon-o-clipboard-document-list';
+        return 'Avaluacions';
     }
 
-    public static function form(Form $form): Form
+    public static function form(Forms\Form $form): Forms\Form
     {
-        return $form->schema(static::getFormSchema());
+        return $form
+            ->schema([
+                Forms\Components\Select::make('evaluado_id')
+                    ->label('Avaluat')
+                    ->relationship('evaluado', 'nombre')
+                    ->required()
+                    ->preload()
+                    ->searchable(),
+                Forms\Components\Select::make('evaluador_id')
+                    ->label('Avaluador')
+                    ->relationship('evaluador', 'nombre')
+                    ->required()
+                    ->preload()
+                    ->searchable(),
+                Forms\Components\Select::make('periodo_id')
+                    ->label('Període')
+                    ->relationship('periodo', 'nombre')
+                    ->required()
+                    ->preload()
+                    ->searchable(),
+                Forms\Components\DatePicker::make('fecha')
+                    ->label('Data')
+                    ->required()
+                    ->default(now()),
+                Forms\Components\Select::make('tipo')
+                    ->label('Tipus')
+                    ->options([
+                        'Registro' => 'Registre',
+                        'Automatico' => 'Automàtic',
+                        'Encuesta' => 'Enquesta',
+                    ])
+                    ->required()
+                    ->default('Registro'),
+                Forms\Components\Toggle::make('finalizada')
+                    ->label('Finalitzada')
+                    ->default(false),
+            ]);
     }
 
-    protected static function getResourceFormSchema(): array
-    {
-        return [
-            Forms\Components\Select::make('mando_id')
-                ->relationship('mando', 'nif')
-                ->required()
-                ->preload()
-                ->searchable()
-                ->options(function () {
-                    return \App\Models\Mando::where('periodo_id', static::getDefaultPeriodoId())
-                        ->pluck('nif', 'id');
-                }),
-            Forms\Components\Select::make('empleado_id')
-                ->relationship('empleado', 'nif')
-                ->required()
-                ->preload()
-                ->searchable()
-                ->options(function () {
-                    return \App\Models\Empleado::where('periodo_id', static::getDefaultPeriodoId())
-                        ->pluck('nif', 'id');
-                }),
-            Forms\Components\Select::make('indicador_id')
-                ->relationship('indicador', 'nombre')
-                ->required()
-                ->preload()
-                ->searchable()
-                ->options(function () {
-                    return \App\Models\Indicador::where('periodo_id', static::getDefaultPeriodoId())
-                        ->pluck('nombre', 'id');
-                }),
-            Forms\Components\TextInput::make('puntuacion')
-                ->required()
-                ->numeric()
-                ->integer(),
-            Forms\Components\Select::make('periodo_id')
-                ->relationship('periodo', 'nombre')
-                ->required()
-                ->hidden(),
-        ];
-    }
-
-    public static function table(Table $table): Table
+    public static function table(Tables\Table $table): Tables\Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('mando.nombre')
-                    ->label(__('filament.columns.mando'))
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('mando.nif')
-                    ->label(__('filament.columns.nif'))
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('empleado.nombre')
-                    ->label(__('filament.columns.empleado'))
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('empleado.nif')
-                    ->label(__('filament.columns.nif'))
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('indicador.nombre')
-                    ->label(__('filament.columns.indicador'))
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('puntuacion')
-                    ->label(__('filament.columns.puntuacion'))
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label(__('filament.columns.created_at'))
-                    ->dateTime()
+                Tables\Columns\TextColumn::make('evaluado.nombre')
+                    ->label('Avaluat')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->label(__('filament.columns.updated_at'))
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('evaluador.nombre')
+                    ->label('Avaluador')
+                    ->sortable()
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('periodo.nombre')
+                    ->label('Període')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('fecha')
+                    ->label('Data')
+                    ->date()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('tipo')
+                    ->label('Tipus')
+                    ->searchable(),
+                Tables\Columns\IconColumn::make('finalizada')
+                    ->label('Finalitzada')
+                    ->boolean(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Creada')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('tipo')
+                    ->label('Tipus')
+                    ->options([
+                        'Registro' => 'Registre',
+                        'Automatico' => 'Automàtic',
+                        'Encuesta' => 'Enquesta',
+                    ]),
+                Tables\Filters\TernaryFilter::make('finalizada')
+                    ->label('Finalitzada'),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->modifyQueryUsing(fn ($query) => $query->where('periodo_id', static::getDefaultPeriodoId()));
+            ->defaultSort('created_at', 'desc');
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListEvaluacions::route('/'),
+            'index' => Pages\ListEvaluaciones::route('/'),
             'create' => Pages\CreateEvaluacion::route('/create'),
             'edit' => Pages\EditEvaluacion::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->where('periodo_id', static::getDefaultPeriodoId());
+    }
+
+    protected static function getDefaultPeriodoId(): int
+    {
+        return \App\Models\Periodo::where('activo', true)->value('id') ?? 0;
     }
 }

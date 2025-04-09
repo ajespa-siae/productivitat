@@ -6,7 +6,7 @@ use App\Filament\Resources\EvaluacionResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
-class ListEvaluacions extends ListRecords
+class ListEvaluaciones extends ListRecords
 {
     protected static string $resource = EvaluacionResource::class;
 

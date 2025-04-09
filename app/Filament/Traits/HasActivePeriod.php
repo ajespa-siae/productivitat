@@ -7,7 +7,7 @@ use Filament\Forms\Components\Select;
 
 trait HasActivePeriod
 {
-    public static function getFormSchema(): array
+    protected function getFormSchema(): array
     {
         $periodo = Periodo::getActivo();
         if (!$periodo) {
@@ -19,10 +19,10 @@ trait HasActivePeriod
                 $field->default($periodo->id)->disabled();
             }
             return $field;
-        }, static::getResourceFormSchema());
+        }, $this->getResourceFormSchema());
     }
 
-    protected static function getResourceFormSchema(): array
+    protected function getResourceFormSchema(): array
     {
         return [];
     }

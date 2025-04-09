@@ -26,30 +26,26 @@ class EmployeeIdController extends Controller
         $loginUsername = Session::get('login_username', $user->name);
         
         try {
-            // Registrar el username para depuración
             Log::info('Actualizando employeeId para usuario:', [
                 'login_username' => $loginUsername,
                 'session_data' => Session::all(),
                 'auth_user' => $user->toArray()
             ]);
 
-            // Intentar directamente con MMontes
             $ldapUser = LdapUser::query()
-                ->where('samaccountname', '=', 'MMontes')
+                ->where('samaccountname', '=', $loginUsername)
                 ->first();
 
             if (!$ldapUser) {
                 Log::error('Usuario no encontrado en LDAP', [
                     'login_username' => $loginUsername,
-                    'ldap_query' => "samaccountname=MMontes"
+                    'ldap_query' => "samaccountname={$loginUsername}"
                 ]);
                 return back()->withErrors(['error' => 'No se pudo encontrar el usuario en LDAP.']);
             }
 
             Log::info('Usuario encontrado en LDAP', [
-                'ldap_attributes' => $ldapUser->getAttributes(),
-                'can_modify' => $ldapUser->getConnection()->isConnected(),
-                'connection_config' => $ldapUser->getConnection()->getConfiguration()
+                'ldap_attributes' => $ldapUser->getAttributes()
             ]);
 
             try {

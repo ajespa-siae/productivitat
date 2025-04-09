@@ -29,13 +29,15 @@ class GrupoResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form->schema(static::getFormSchema());
+        $instance = new static();
+        return $form->schema($instance->getFormSchema());
     }
 
     protected static function getResourceFormSchema(): array
     {
         return [
             Forms\Components\TextInput::make('codigo')
+                ->label('Codi')
                 ->required()
                 ->maxLength(255)
                 ->unique(ignoreRecord: true, modifyRuleUsing: function ($rule) {
@@ -111,6 +113,6 @@ class GrupoResource extends Resource
 
     public static function getNavigationSort(): ?int
     {
-        return 4;
+        return 5;
     }
 }

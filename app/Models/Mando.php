@@ -14,10 +14,9 @@ class Mando extends Model
     protected $table = 'mandos';
 
     protected $fillable = [
-        'nombre',
-        'apellidos',
         'nif',
         'periodo_id',
+        'grupo_id',
     ];
 
     public function evaluaciones(): HasMany
@@ -28,5 +27,15 @@ class Mando extends Model
     public function periodo(): BelongsTo
     {
         return $this->belongsTo(Periodo::class);
+    }
+
+    public function grupo(): BelongsTo
+    {
+        return $this->belongsTo(Grupo::class);
+    }
+
+    public function empleado(): BelongsTo
+    {
+        return $this->belongsTo(Empleado::class, 'nif', 'nif');
     }
 }

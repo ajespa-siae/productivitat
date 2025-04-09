@@ -9,4 +9,10 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateRol extends CreateRecord
 {
     protected static string $resource = RolResource::class;
+
+    protected function getCreateFormAction(): Actions\Action
+    {
+        return parent::getCreateFormAction()
+            ->label('Afegir');
+    }
 }

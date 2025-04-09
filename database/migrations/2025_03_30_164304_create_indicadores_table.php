@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('competencia_id')->constrained('competencias');
             $table->foreignId('grupo_id')->constrained('grupos');
             $table->foreignId('rol_id')->constrained('roles');
-            $table->enum('sentido', ['positivo', 'negativo']);
+            $table->enum('sentido', ['Positiu', 'Negatiu']);
             $table->integer('valor_minimo');
             $table->integer('valor_maximo');
             $table->foreignId('periodo_id')->constrained('periodos');

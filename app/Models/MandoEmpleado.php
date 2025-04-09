@@ -4,12 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Traits\HasActivePeriod;
 
 class MandoEmpleado extends Model
 {
-    use HasActivePeriod;
-
     protected $table = 'mandos_empleados';
 
     protected $fillable = [

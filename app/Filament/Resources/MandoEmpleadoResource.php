@@ -29,29 +29,53 @@ class MandoEmpleadoResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form->schema(static::getFormSchema());
+        return $form->schema(app(static::class)->getResourceFormSchema());
     }
 
-    protected static function getResourceFormSchema(): array
+    protected function getResourceFormSchema(): array
     {
         return [
             Forms\Components\Select::make('mando_id')
-                ->relationship('mando', 'nif')
                 ->required()
                 ->preload()
                 ->searchable()
-                ->options(function () {
-                    return \App\Models\Mando::where('periodo_id', static::getDefaultPeriodoId())
-                        ->pluck('nif', 'id');
+                ->getSearchResultsUsing(function (string $search) {
+                    return \App\Models\Empleado::query()
+                        ->whereIn('nif', function ($query) {
+                            $query->select('nif')
+                                ->from('mandos')
+                                ->where('periodo_id', static::getDefaultPeriodoId());
+                        })
+                        ->where(function ($query) use ($search) {
+                            $query->where('nombre', 'ilike', "%{$search}%")
+                                ->orWhere('apellidos', 'ilike', "%{$search}%")
+                                ->orWhere('nif', 'ilike', "%{$search}%");
+                        })
+                        ->get()
+                        ->mapWithKeys(function ($empleado) {
+                            $mando = \App\Models\Mando::where('nif', $empleado->nif)
+                                ->where('periodo_id', static::getDefaultPeriodoId())
+                                ->first();
+                            return [$mando->id => "{$empleado->nombre} {$empleado->apellidos} ({$empleado->nif})"];
+                        })
+                        ->toArray();
                 }),
             Forms\Components\Select::make('empleado_id')
-                ->relationship('empleado', 'nif')
                 ->required()
                 ->preload()
                 ->searchable()
-                ->options(function () {
-                    return \App\Models\Empleado::where('periodo_id', static::getDefaultPeriodoId())
-                        ->pluck('nif', 'id');
+                ->getSearchResultsUsing(function (string $search) {
+                    return \App\Models\Empleado::query()
+                        ->where(function ($query) use ($search) {
+                            $query->where('nombre', 'ilike', "%{$search}%")
+                                ->orWhere('apellidos', 'ilike', "%{$search}%")
+                                ->orWhere('nif', 'ilike', "%{$search}%");
+                        })
+                        ->get()
+                        ->mapWithKeys(function ($empleado) {
+                            return [$empleado->id => "{$empleado->nombre} {$empleado->apellidos} ({$empleado->nif})"];
+                        })
+                        ->toArray();
                 }),
             Forms\Components\Select::make('periodo_id')
                 ->relationship('periodo', 'nombre')
@@ -64,16 +88,22 @@ class MandoEmpleadoResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('mando.nombre')
-                    ->label(__('filament.columns.mando'))
+                Tables\Columns\TextColumn::make('mando.empleado.nombre')
+                    ->label(__('filament.columns.nombre_mando'))
+                    ->sortable()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('mando.nif')
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('mando.empleado.apellidos')
+                    ->label(__('filament.columns.apellidos_mando'))
+                    ->sortable()
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('empleado.nombre')
-                    ->label(__('filament.columns.empleado'))
+                    ->label(__('filament.columns.nombre_empleado'))
+                    ->sortable()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('empleado.nif')
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('empleado.apellidos')
+                    ->label(__('filament.columns.apellidos_empleado'))
+                    ->sortable()
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label(__('filament.columns.created_at'))
                     ->dateTime()
@@ -121,6 +151,6 @@ class MandoEmpleadoResource extends Resource
 
     public static function getNavigationSort(): ?int
     {
-        return 3;
+        return 4;
     }
 }

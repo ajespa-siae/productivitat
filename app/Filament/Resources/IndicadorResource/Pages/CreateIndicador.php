@@ -9,4 +9,10 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateIndicador extends CreateRecord
 {
     protected static string $resource = IndicadorResource::class;
+
+    protected function getCreateFormAction(): Actions\Action
+    {
+        return parent::getCreateFormAction()
+            ->label('Afegir');
+    }
 }

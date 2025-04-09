@@ -20,26 +20,34 @@ class ListEmpleados extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->label('Afegir'),
             Action::make('importar')
                 ->label('Importar Excel')
                 ->icon('heroicon-o-arrow-up-tray')
+                ->modalWidth('xl')
                 ->form([
-                    \Filament\Forms\Components\FileUpload::make('excel')
-                        ->label('Archivo Excel')
+                    \Filament\Forms\Components\FileUpload::make('file')
+                        ->label('Arxiu Excel')
                         ->disk('local')
                         ->directory('tmp')
                         ->preserveFilenames()
-                        ->acceptedFileTypes(['application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'])
-                        ->required(),
+                        ->required()
+                        ->acceptedFileTypes([
+                            'application/vnd.ms-excel',
+                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                        ]),
+                    \Filament\Forms\Components\Section::make('Columnes necessàries: [Nom, Cognoms, NIF]')
+                        ->description('(*) A l\'arxiu Excel posarem el nom, cognoms i NIF de cada empleat')
+                        ->collapsible(),
                 ])
                 ->action(function (array $data): void {
                     try {
-                        if (empty($data['excel'])) {
+                        if (empty($data['file'])) {
                             throw new \Exception('No se ha subido ningún archivo');
                         }
 
-                        $filePath = $data['excel'];
+                        $filePath = $data['file'];
                         if (is_array($filePath)) {
                             $filePath = $filePath[0];
                         }
@@ -68,8 +76,8 @@ class ListEmpleados extends ListRecords
                     } catch (\Exception $e) {
                         DB::rollBack();
                         
-                        if (!empty($data['excel'])) {
-                            $filePath = is_array($data['excel']) ? $data['excel'][0] : $data['excel'];
+                        if (!empty($data['file'])) {
+                            $filePath = is_array($data['file']) ? $data['file'][0] : $data['file'];
                             if (Storage::disk('local')->exists($filePath)) {
                                 Storage::disk('local')->delete($filePath);
                             }
@@ -84,7 +92,6 @@ class ListEmpleados extends ListRecords
                     }
                 })
                 ->modalHeading('Importar Empleados')
-                ->modalWidth('md')
                 ->modalButton('Importar'),
         ];
     }

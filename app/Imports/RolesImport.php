@@ -20,12 +20,31 @@ class RolesImport implements ToModel, WithHeadingRow
         
         Log::info('Datos después de convertir a minúsculas:', $row);
 
+        // Mapear las columnas en catalán a las columnas en español
+        $row = array_combine(
+            array_map(function ($key) {
+                return match($key) {
+                    'nom' => 'nombre',
+                    'codi' => 'codigo',
+                    default => $key
+                };
+            }, array_keys($row)),
+            array_values($row)
+        );
+
         // Validar que las columnas requeridas existan
-        $required_columns = ['nombre', 'codigo'];
+        $required_columns = [
+            'nombre', // nom
+            'codigo'  // codi
+        ];
+        $column_names = [
+            'nombre' => 'Nom',
+            'codigo' => 'Codi'
+        ];
         foreach ($required_columns as $column) {
             if (!isset($row[$column])) {
                 Log::error("Columna no encontrada: {$column}");
-                throw new \Exception("Columna requerida '".ucfirst($column)."' no encontrada en el archivo");
+                throw new \Exception("Columna requerida '".$column_names[$column]."' no trobada a l'arxiu");
             }
         }
 
@@ -38,12 +57,12 @@ class RolesImport implements ToModel, WithHeadingRow
                 'tipo_nombre' => gettype($row['nombre'] ?? null),
                 'tipo_codigo' => gettype($row['codigo'] ?? null)
             ]);
-            throw new \Exception("Los campos Nombre y Código no pueden estar vacíos");
+            throw new \Exception("Els camps Nom i Codi no poden estar buits");
         }
 
         $periodo = Periodo::getActivo();
         if (!$periodo) {
-            throw new \Exception('No hay ningún periodo activo');
+            throw new \Exception('No existeix un període actiu');
         }
 
         // Verificar si ya existe un rol con el mismo código en este periodo
@@ -52,7 +71,7 @@ class RolesImport implements ToModel, WithHeadingRow
             ->first();
 
         if ($existingRole) {
-            throw new \Exception("Ya existe un rol con el código '{$row['codigo']}' en este periodo");
+            throw new \Exception("Ja existeix un rol amb el codi '{$row['codigo']}' en aquest període");
         }
 
         return new Rol([
